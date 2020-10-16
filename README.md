@@ -1,3 +1,5 @@
+![github-actions](https://github.com/asbestian/connected_subgraph/workflows/github-actions/badge.svg)
+
 # About
 We consider the _connected subgraph problem_ which can be described as follows: 
 We are given a connected, undirected graph _G = (V,E)_. For each node _v in V_ we are given 
