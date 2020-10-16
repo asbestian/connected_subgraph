@@ -29,4 +29,4 @@ jobs:
           pylint conn_subgraph/*.py
           pylint test/*.py
       - name: test
-        run: python -m unittest discover test -v
+        run: python -m unittest test/*.py -v
