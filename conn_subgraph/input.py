@@ -1,5 +1,9 @@
 """Module responsible for handling input files."""
 
+import logging
+
+module_logger = logging.getLogger('input')
+
 
 class InputError(Exception):
     """Base class for input exceptions."""
@@ -31,7 +35,6 @@ class Input:
                 if prefix != 'p':
                     raise InputError(f'Expected p as first character; found {prefix}.')
                 num_nodes, num_terminals = (int(i) for i in values)
-
                 if with_budget:
                     *rest, budget_line = rest
                     prefix, budget = budget_line.split()
@@ -64,4 +67,8 @@ class Input:
         if (terminals := len(ins.terminals)) != num_terminals:
             raise InputError(f'Expected {num_terminals} terminal; found {terminals}')
 
+        module_logger.info(f'Number of nodes: {num_nodes}')
+        module_logger.info(f'Number of terminals: {num_terminals}')
+        module_logger.info(f'Number of graph edges: {len(ins.edges)}')
+        module_logger.info(f'Budget value: {ins.budget}')
         return ins
