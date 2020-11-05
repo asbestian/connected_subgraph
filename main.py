@@ -2,8 +2,6 @@
 
 from argparse import ArgumentParser
 
-from ortools.linear_solver import pywraplp
-
 from conn_subgraph.input import Input
 from conn_subgraph.model import MipModel
 
@@ -15,6 +13,8 @@ cmd_parser.add_argument('-b', dest='budget', default=False, action='store_true',
 if __name__ == '__main__':
     cmd_args = cmd_parser.parse_args()
     prob_input = Input.read_file(cmd_args.file, cmd_args.budget)
-    solver = pywraplp.Solver.CreateSolver('CBC')
-    solver.EnableOutput()
-    lp_model = MipModel.build_relaxation(prob_input, solver)
+    lp_relaxation = MipModel(prob_input, binary_variables=False)
+    lp_relaxation.add_cardinality_constraint()
+    lp_relaxation.add_weight_constraint()
+    lp_relaxation.add_objective()
+    lp_relaxation.solver.EnableOutput()
