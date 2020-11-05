@@ -12,8 +12,9 @@ module_logger = logging.getLogger('model')
 class MipModel:
     """Models the connected subgraph problem via mixed integer programming."""
 
-    def __init__(self, prob_input: Input, *, binary_variables):
-        self.solver = pywraplp.Solver.CreateSolver('CBC')
+    def __init__(self, prob_input: Input, *, solver: str = 'CBC',
+                 binary_variables: bool = False) -> None:
+        self.solver = pywraplp.Solver.CreateSolver(solver)
         self._prob_input = prob_input
         self._edge_vars = dict()
         self._node_vars = dict()
@@ -62,7 +63,7 @@ class MipModel:
         return {v: var.solution_value() for v, var in self.edge_vars.items() if
                 var.solution_value() > 0.}
 
-    def __add_edge_vars(self, binary):
+    def __add_edge_vars(self, binary: bool) -> None:
         """Creates edge variables and adds them to the solver model."""
         lb = 0
         ub = 1
@@ -72,7 +73,7 @@ class MipModel:
                 self.solver.NumVar(lb=lb, ub=ub, name=name)
         module_logger.debug(f'Added {len(self.graph_edges)} edge variables.')
 
-    def __add_node_vars(self, binary):
+    def __add_node_vars(self, binary: bool) -> None:
         """Creates node variables and adds them to the solver model."""
         lb = 0
         ub = 1
@@ -82,7 +83,7 @@ class MipModel:
                 self.solver.NumVar(lb=lb, ub=ub, name=name)
         module_logger.debug(f'Added {len(self.node_vars)} node variables.')
 
-    def add_cardinality_constraint(self):
+    def add_cardinality_constraint(self) -> None:
         """Creates an equality constraint where the rhs corresponds to the sum over all
         edge variables and the lhs corresponds to the sum over all node variables plus the number
         of terminals minus 1. In other words, x(E) = y(N) + |T| - 1.
@@ -92,7 +93,7 @@ class MipModel:
         self.solver.Add(lhs == rhs, name='card_cons')
         module_logger.debug('Added cardinality constraint.')
 
-    def add_budget_constraint(self):
+    def add_budget_constraint(self) -> None:
         """Ensures that the weight taken over all selected nodes is less or equal than the budget.
         In other words, y(N) <= b.
         """
@@ -102,7 +103,7 @@ class MipModel:
         self.solver.Add(lhs <= rhs, name='weight_cons')
         module_logger.debug('Added budged constraint.')
 
-    def add_objective(self):
+    def max_profits(self) -> None:
         """Maximises the profit taken over all selected nodes."""
         obj = self.solver.Sum(
             (self.node_profit[node] * var for node, var in self.node_vars.items()))
