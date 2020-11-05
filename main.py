@@ -3,6 +3,7 @@
 import logging
 from argparse import ArgumentParser
 
+from conn_subgraph.cuts import SubtourCut
 from conn_subgraph.input import Input
 from conn_subgraph.model import MipModel
 
@@ -26,3 +27,8 @@ if __name__ == '__main__':
     if cmd_args.output:
         lp_relaxation.solver.EnableOutput()
     status = lp_relaxation.solver.Solve()
+    
+    cut = SubtourCut(pos_node_vars=lp_relaxation.positive_node_vars,
+                     pos_edge_vars=lp_relaxation.positive_edge_vars)
+    min_cut = cut.compute_cut()
+    print("test")

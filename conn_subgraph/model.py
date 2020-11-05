@@ -1,10 +1,7 @@
 """Module responsible for modelling the connected subgraph problem mathematically."""
 
 import logging
-from itertools import product, chain
-from math import inf
 
-from igraph import Graph
 from ortools.linear_solver import pywraplp
 
 from conn_subgraph.input import Input
@@ -55,6 +52,16 @@ class MipModel:
     def node_vars(self):
         return self._node_vars
 
+    @property
+    def positive_node_vars(self):
+        return {v: var.solution_value() for v, var in self.node_vars.items() if
+                var.solution_value() > 0.}
+
+    @property
+    def positive_edge_vars(self):
+        return {v: var.solution_value() for v, var in self.edge_vars.items() if
+                var.solution_value() > 0.}
+
     def __add_edge_vars(self, binary):
         """Creates edge variables and adds them to the solver model."""
         lb = 0
@@ -101,24 +108,3 @@ class MipModel:
             (self.node_profit[node] * var for node, var in self.node_vars.items()))
         self.solver.Maximize(obj)
         module_logger.debug('Added objective function.')
-
-    def add_subtour_eliminiation_cut(self, k: int):
-        """Returns true if violated constraint was added; False, otherwise."""
-        source_id = 0
-        pos_node_vars = (v for v, var in self.node_vars.items() if
-                         var.solution_value() > 0 and v != k)
-        pos_edge_vars = (e for e, var in self.edge_vars.items() if var.solution_value() > 0)
-        v1 = {index: e for index, e in enumerate(pos_edge_vars, 1)}
-        v2 = {index: v for index, v in enumerate(pos_node_vars, len(v1) + 1)}
-        target_id = len(v1) + len(v2) + 1
-        arcs_source_v1 = ((source_id, ind) for ind in v1.keys())
-        weights = [self.edge_vars[var].solution_value() for var in v1.values()]
-        arcs_v2_target = ((ind, target_id) for ind in v2.keys())
-        weights.extend((self.node_vars[var].solution_value() for var in v2.values()))
-        arcs_v1_v2 = [(ind1, ind2) for (ind1, e), (ind2, v) in product(v1.items(), v2.items()) if
-                      v in e]
-        weights.extend((inf for _ in arcs_v1_v2))
-        graph = Graph(edges=chain(arcs_source_v1, arcs_v1_v2, arcs_v2_target), directed=True)
-        graph.es["weights"] = weights
-        cut = graph.st_mincut(source_id, target_id, 'weights')
-        return False
