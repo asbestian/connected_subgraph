@@ -1,0 +1,71 @@
+\documentclass{beamer}
+\usetheme{Boadilla}
+\setbeamertemplate{navigation symbols}{}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath, amsfonts, amssymb}
+
+\usepackage{commath} % defines \norm{}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+
+\newtheorem{prop}{Proposition}
+
+\begin{document}
+\begin{frame}{Notation}
+  \begin{itemize}
+  \item $G = (V,E)$ undirected graph
+  \item set $T \subset V$ of terminals 
+  \item set $N = V \setminus T$ of non-terminals
+  \item $E(S) = \{\{i,j\} \in E: i,j \in S\}$ for some $S \subseteq V$
+  \end{itemize}
+\end{frame}
+
+\section{Separation routines}
+\begin{frame}{Considered constraint}
+  \begin{itemize}
+  \item $\sum\limits_{e \in E(S)} x_e \leq \sum\limits_{v \in S
+    \setminus \{k\}} y_v$ for $k \in S \subseteq N$
+  \item let $k \in N$ be fixed and let $(x^*,y^*)$ be non-negative
+  \item consider $\min\limits_{S \subseteq N, k \in S} f(S)$ where
+    $f(S) = \sum\limits_{v \in S \setminus \{k\}} y^*_v -
+    \sum\limits_{e \in E(S)} x^*_e$ for $S \subseteq N$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{equation*}
+    f(S) = \sum\limits_{v \in S \setminus \{k\}} y^*_v -
+    \sum\limits_{e \in E(S)} x^*_e = \sum\limits_{j \in S} d_j -
+    \sum\limits_{i,j \in S} q_{ij}
+  \end{equation*}
+  with
+  \begin{itemize}
+    \item $d_j = y^*_j$ for $j \in S \setminus \{k\}$; 0 otherwise
+    \item $q_{ij} = q_{ji} = \frac{1}{2} x^*_e$ where $e = \{i,j\}$
+      for $i,j \in S$; 0 otherwise
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Compute min s-t cut}
+  \begin{itemize}
+  \item consider digraph $D = (V_1 \cup V_2 \cup \{s,t\}, A)$ where
+  \item $V_1 = \{\{i,j\} \in N: x^*_{\{i,j\}} > 0\}$
+  \item $V_2 = \{j \in N: y^*_j > 0\}$
+  \item $A = A_1 \cup A_2 \cup A_3$ where
+    \begin{itemize}
+      \item $A_1 = \{(u,v) : u \in V_1, v \in V_2, u \cap v \neq
+        \emptyset\}$
+      \item $A_2 = \{(s,u) : u \in V_1\}$
+      \item $A_3 = \{(v,t) : v \in V_2\}$
+    \end{itemize}
+  \item with capacities $c_a$ for $a \in A$:
+    \begin{itemize}
+    \item $c_a = \infty$ for $a \in A_1$
+    \item $c_{\{s,u\}} = y^*_u$ for $\{s,u\} \in A_2$
+    \item $c_{\{v,t\}} = x^*_v$ for $\{v,t\} \in A_3$
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\end{document}

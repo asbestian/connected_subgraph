@@ -1,3 +1,5 @@
 ortools==8.0.8283
 protobuf==3.13.0
+python-igraph==0.8.3
 six==1.15.0
+texttable==1.6.3
