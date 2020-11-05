@@ -20,10 +20,10 @@ if __name__ == '__main__':
     cmd_args = cmd_parser.parse_args()
     logging.basicConfig(level=logging.DEBUG if cmd_args.debug else logging.INFO)
     prob_input = Input.read_file(cmd_args.file, cmd_args.budget)
-    lp_relaxation = MipModel(prob_input, binary_variables=False)
+    lp_relaxation = MipModel(prob_input)
     lp_relaxation.add_cardinality_constraint()
     lp_relaxation.add_budget_constraint()
-    lp_relaxation.add_objective()
+    lp_relaxation.max_profits()
     if cmd_args.output:
         lp_relaxation.solver.EnableOutput()
     status = lp_relaxation.solver.Solve()
