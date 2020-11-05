@@ -12,7 +12,8 @@ class InputError(Exception):
 class Input:
     """Class responsible for reading input files."""
 
-    def __init__(self, nodes, terminals, profits, costs, edges, budget):
+    def __init__(self, nodes: set, terminals: set, profits: dict, costs: dict, edges: set,
+                 budget: int):
         self._nodes = nodes
         self._terminals = terminals
         self._profits = profits
