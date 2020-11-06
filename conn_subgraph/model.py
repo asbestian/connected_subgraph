@@ -34,6 +34,10 @@ class MipModel:
         return self._prob_input.terminals
 
     @property
+    def graph_non_terminals(self):
+        return self._prob_input.non_terminals
+
+    @property
     def node_cost(self):
         return self._prob_input.costs
 
@@ -85,27 +89,32 @@ class MipModel:
 
     def add_cardinality_constraint(self) -> None:
         """Creates an equality constraint where the rhs corresponds to the sum over all
-        edge variables and the lhs corresponds to the sum over all node variables plus the number
-        of terminals minus 1. In other words, x(E) = y(N) + |T| - 1.
+        edge variables and the lhs corresponds to the sum over all non-terminal node variables plus
+        the number of terminals minus 1. In other words, x(E) = y(N) + |T| - 1.
         """
-        lhs = self.solver.Sum(self.edge_vars.values())
-        rhs = self.solver.Sum(self.node_vars.values()) + len(self.graph_terminals) - 1
-        self.solver.Add(lhs == rhs, name='card_cons')
-        module_logger.debug('Added cardinality constraint.')
+        rhs = [self.node_vars.get(n) for n in self.graph_non_terminals] + \
+              [len(self.graph_terminals) - 1]
+        self.solver.Add(sum(self.edge_vars.values()) == sum(rhs), name='card_cons')
+        if logging.root.level >= logging.DEBUG:
+            lhs_str = " + ".join(str(e) for e in self.edge_vars.values())
+            rhs_str = " + ".join(str(i) for i in rhs)
+            module_logger.debug(f'Added cardinality constraint: {lhs_str} == {rhs_str}')
 
     def add_budget_constraint(self) -> None:
         """Ensures that the weight taken over all selected nodes is less or equal than the budget.
         In other words, y(N) <= b.
         """
-        lhs = self.solver.Sum(
-            (self.node_cost[node] * var for node, var in self.node_vars.items()))
+        lhs = [(self.node_cost[v], var) for v, var in self.node_vars.items()]
         rhs = self.budget
-        self.solver.Add(lhs <= rhs, name='weight_cons')
-        module_logger.debug('Added budged constraint.')
+        self.solver.Add(sum(coeff * var for coeff, var in lhs) <= rhs, name='weight_cons')
+        if logging.root.level >= logging.DEBUG:
+            lhs_str = " + ".join(str(coeff) + str(var) for coeff, var in lhs)
+            module_logger.debug(f'Added budged constraint: {lhs_str} <= {self.budget}')
 
     def max_profits(self) -> None:
         """Maximises the profit taken over all selected nodes."""
-        obj = self.solver.Sum(
-            (self.node_profit[node] * var for node, var in self.node_vars.items()))
-        self.solver.Maximize(obj)
-        module_logger.debug('Added objective function.')
+        obj = [(self.node_profit[v], var) for v, var in self.node_vars.items()]
+        self.solver.Maximize(sum(coeff * var for coeff, var in obj))
+        if logging.root.level >= logging.DEBUG:
+            obj_str = " + ".join(str(coeff) + str(var) for coeff, var in obj)
+            module_logger.debug(f'Added objective: {obj_str}')
