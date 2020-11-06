@@ -29,3 +29,15 @@ if __name__ == '__main__':
     status = lp_relaxation.solver.Solve()
     cut = SubtourCut(pos_node_vars=lp_relaxation.positive_non_terminal_vars,
                      pos_edge_vars=lp_relaxation.positive_edge_vars)
+    for k in prob_input.non_terminals:
+        f_S, S = cut.compute_min_cut(k)
+        x = sum(
+            var.solution_value() for (u, v), var in lp_relaxation.edge_vars.items() if
+            u in S and v in S)
+        y = sum(
+            var.solution_value() for v, var in lp_relaxation.non_terminal_vars.items() if
+            v in S and v != k)
+        if x > y:
+            print('CUT FOUND!')
+            logging.debug(f'X(E(S)) = {x} > {y} = Y(S\{k})')
+            break

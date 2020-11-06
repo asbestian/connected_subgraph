@@ -15,9 +15,11 @@ class SubtourCut:
     def __init__(self, *, pos_node_vars: dict, pos_edge_vars: dict):
         self.pos_node_vars = pos_node_vars
         self.pos_edge_vars = pos_edge_vars
+        self.value = sum(pos_node_vars.values())
 
-    def compute_min_cut(self, k: int):
+    def compute_min_cut(self, k: int) -> (int, list):
         """Computes a min s-t cut based on the graph construction described in doc/separation.pdf.
+        Returns a tuple consisting of the minimal value f(S) and the set S.
         """
         considered_nodes = (node for node in self.pos_node_vars.keys() if node != k)
         source_id = 0
@@ -42,4 +44,10 @@ class SubtourCut:
         graph.es["weights"] = weights
         if len(weights) != len(graph.get_edgelist()):
             raise RuntimeError("|Weights| != |Edges|")
-        return graph.st_mincut(source_id, target_id, 'weights')
+        min_cut = graph.st_mincut(source_id, target_id, 'weights')
+        partition = set(min_cut.partition[0])
+        if source_id not in partition:
+            raise RuntimeError('Source expected in partition.')
+        S = {v2.get(index) for index in v2 if index in partition}
+        f_S = min_cut.value - self.value
+        return (f_S, S)
