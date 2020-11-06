@@ -23,13 +23,18 @@ class Input:
 
     @property
     def nodes(self):
-        """Return the nodes of input graph."""
+        """Return the nodes of the input graph."""
         return self._nodes
 
     @property
     def terminals(self):
-        """Return the terminals of input graph."""
+        """Return the terminals of the input graph."""
         return self._terminals
+
+    @property
+    def non_terminals(self):
+        """Return the non_terminal nodes of the input graph."""
+        return self._nodes.difference(self._terminals)
 
     @property
     def profits(self):

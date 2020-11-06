@@ -14,6 +14,7 @@ class MipModelTest(TestCase):
         self.input = Mock(spec=Input)
         self.input.nodes = {1, 2, 3, 4}
         self.input.terminals = {1, 2}
+        self.input.non_terminals = {3, 4}
         self.input.profits = {1: 1, 2: 2, 3: 3, 4: 4}
         self.input.costs = {1: 1, 2: 3, 3: 5, 4: 10}
         self.input.edges = {(1, 2), (1, 3)}
@@ -55,4 +56,4 @@ class MipModelTest(TestCase):
 
         self.assertEqual(status, Solver.OPTIMAL)
         self.assertEqual(1, model.solver.NumConstraints())
-        self.assertAlmostEqual(4, model.solver.Objective().Value())
+        self.assertAlmostEqual(7, model.solver.Objective().Value())

@@ -21,6 +21,7 @@ class InputTest(unittest.TestCase):
             file_input = Input.read_file(mock_without_budget, False)
         self.assertEqual({0, 1, 2, 3}, file_input.nodes)
         self.assertEqual({0, 3}, file_input.terminals)
+        self.assertEqual({1, 2}, file_input.non_terminals)
         self.assertEqual(10, file_input.profits[1])
         self.assertEqual(20, file_input.profits[3])
         self.assertEqual(10, file_input.costs[0])
@@ -46,6 +47,7 @@ class InputTest(unittest.TestCase):
 
         self.assertEqual({0, 1, 2, 3, 4}, file_input.nodes)
         self.assertEqual({1, 2, 3}, file_input.terminals)
+        self.assertEqual({0, 4}, file_input.non_terminals)
         self.assertEqual(20, file_input.profits[1])
         self.assertEqual(40, file_input.profits[3])
         self.assertEqual(5, file_input.costs[0])
