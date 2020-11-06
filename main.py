@@ -7,6 +7,8 @@ from conn_subgraph.cut import SubtourCut
 from conn_subgraph.input import Input
 from conn_subgraph.model import MipModel
 
+module_logger = logging.getLogger('main')
+
 cmd_parser = ArgumentParser(description='The connected subgraph problem.')
 cmd_parser.add_argument('-f', dest='file', type=str, help='Specifies the input file', required=True)
 cmd_parser.add_argument('-b', dest='budget', default=False, action='store_true',

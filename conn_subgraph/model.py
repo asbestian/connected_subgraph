@@ -113,3 +113,11 @@ class MipModel:
         if logging.root.level >= logging.DEBUG:
             obj_str = " + ".join(str(coeff) + str(var) for coeff, var in obj)
             module_logger.debug(f'Added objective: {obj_str}')
+
+    def is_sol_fractional(self):
+        """Returns true if the computed solution is fractional; false, otherwise."""
+        epsilon = 0.001
+        for var in self.non_terminal_vars.values():
+            if var.solution_value() > epsilon or var.solution_value() < 1. - epsilon:
+                return True
+        return False

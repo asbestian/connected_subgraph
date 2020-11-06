@@ -9,4 +9,4 @@ c terminal 4 connected to (3, 5)
 n 4 1 6 6 2 3 5
 c node 5 connected to (1, 2, 4)
 n 5 0 5 5 3 1 2 4
-b 30
+b 15
