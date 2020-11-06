@@ -100,7 +100,7 @@ class Input:
                         raise InputError(
                             f'Expected {num_neighbours} neighbours; found {neighbours}.')
                     for neighbour in distinct_neighbours:
-                        edges.add((node_id, neighbour))
+                        edges.add((min(node_id, neighbour), max(node_id, neighbour)))
         except FileNotFoundError:
             raise InputError(f'File {file} not found.')
         if (number_nodes := len(non_terminals) + len(terminals)) != num_nodes:
