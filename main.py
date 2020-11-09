@@ -39,6 +39,7 @@ if __name__ == '__main__':
         y = sum(
             var.solution_value() for v, var in lp_relaxation.non_terminal_vars.items() if
             v in S and v != k)
+        logging.debug(f'X(E(S)) = {x} <= {y} = Y(S\{k})')
         if x > y:
             print('CUT FOUND!')
             logging.debug(f'X(E(S)) = {x} > {y} = Y(S\{k})')
