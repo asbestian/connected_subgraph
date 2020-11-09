@@ -12,19 +12,14 @@ class InputError(Exception):
 class Input:
     """Class responsible for reading input files."""
 
-    def __init__(self, nodes: set, terminals: set, profits: dict, costs: dict, edges: set,
+    def __init__(self, non_terminals: set, terminals: set, profits: dict, costs: dict, edges: set,
                  budget: int):
-        self._nodes = nodes
+        self._non_terminals = non_terminals
         self._terminals = terminals
         self._profits = profits
         self._costs = costs
         self._edges = edges
         self._budget = budget
-
-    @property
-    def nodes(self):
-        """Return the nodes of the input graph."""
-        return self._nodes
 
     @property
     def terminals(self):
@@ -33,8 +28,13 @@ class Input:
 
     @property
     def non_terminals(self):
-        """Return the non_terminal nodes of the input graph."""
-        return self._nodes.difference(self._terminals)
+        """Return the non-terminal nodes of the input graph."""
+        return self._non_terminals
+
+    @property
+    def nodes(self):
+        """Return the nodes, i.e., non-terminals and terminals, of the input graph."""
+        return self.non_terminals.union(self.terminals)
 
     @property
     def profits(self):
@@ -62,7 +62,7 @@ class Input:
         :param file: the input filename (including path)
         :param with_budget: indicates whether the budget is specified (at the end) of the input;
         """
-        nodes = set()
+        non_terminals = set()
         terminals = set()
         profits = dict()
         costs = dict()
@@ -89,9 +89,10 @@ class Input:
                         raise InputError(f'Expected n as first character; found {prefix}.')
                     node_id, is_terminal, profit, cost, num_neighbours, *neighbour_ids = \
                         (int(i) for i in values)
-                    nodes.add(node_id)
                     if is_terminal:
                         terminals.add(node_id)
+                    else:
+                        non_terminals.add(node_id)
                     profits[node_id] = profit
                     costs[node_id] = cost
                     distinct_neighbours = set((int(n) for n in neighbour_ids))
@@ -102,7 +103,7 @@ class Input:
                         edges.add((node_id, neighbour))
         except FileNotFoundError:
             raise InputError(f'File {file} not found.')
-        if (number_nodes := len(nodes)) != num_nodes:
+        if (number_nodes := len(non_terminals) + len(terminals)) != num_nodes:
             raise InputError(f'Expected {num_nodes} nodes; found {number_nodes}.')
         if (number_terminals := len(terminals)) != num_terminals:
             raise InputError(f'Expected {num_terminals} terminal; found {number_terminals}')
@@ -110,4 +111,4 @@ class Input:
         module_logger.info(f'Number of terminals: {num_terminals}')
         module_logger.info(f'Number of graph edges: {len(edges)}')
         module_logger.info(f'Budget value: {budget}')
-        return cls(nodes, terminals, profits, costs, edges, budget)
+        return cls(non_terminals, terminals, profits, costs, edges, budget)
