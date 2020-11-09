@@ -12,7 +12,6 @@ class MipModelTest(TestCase):
 
     def setUp(self):
         self.input = Mock(spec=Input)
-        self.input.nodes = {1, 2, 3, 4}
         self.input.terminals = {1, 2}
         self.input.non_terminals = {3, 4}
         self.input.profits = {1: 1, 2: 2, 3: 3, 4: 4}
@@ -24,7 +23,8 @@ class MipModelTest(TestCase):
         model = MipModel(self.input)
 
         self.assertEqual(0, model.solver.NumConstraints())
-        self.assertEqual(len(self.input.nodes) + len(self.input.edges), model.solver.NumVariables())
+        self.assertEqual(len(self.input.non_terminals) + len(self.input.edges),
+                         model.solver.NumVariables())
 
     def test_objective(self):
         model = MipModel(self.input)
@@ -34,7 +34,8 @@ class MipModelTest(TestCase):
 
         self.assertEqual(status, Solver.OPTIMAL)
         self.assertEqual(0, model.solver.NumConstraints())
-        self.assertAlmostEqual(sum(self.input.profits.values()), model.solver.Objective().Value())
+        self.assertAlmostEqual(sum(self.input.profits[n] for n in self.input.non_terminals),
+                               model.solver.Objective().Value())
 
     def test_budget_constraint(self):
         model = MipModel(self.input)
@@ -45,7 +46,7 @@ class MipModelTest(TestCase):
 
         self.assertEqual(status, Solver.OPTIMAL)
         self.assertEqual(1, model.solver.NumConstraints())
-        self.assertAlmostEqual(6, model.solver.Objective().Value())
+        self.assertAlmostEqual(3, model.solver.Objective().Value())
 
     def test_cardinality_constraint(self):
         model = MipModel(self.input)
@@ -56,4 +57,4 @@ class MipModelTest(TestCase):
 
         self.assertEqual(status, Solver.OPTIMAL)
         self.assertEqual(1, model.solver.NumConstraints())
-        self.assertAlmostEqual(7, model.solver.Objective().Value())
+        self.assertAlmostEqual(4, model.solver.Objective().Value())

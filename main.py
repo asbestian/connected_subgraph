@@ -27,5 +27,5 @@ if __name__ == '__main__':
     if cmd_args.output:
         lp_relaxation.solver.EnableOutput()
     status = lp_relaxation.solver.Solve()
-    cut = SubtourCut(pos_node_vars=lp_relaxation.positive_node_vars,
+    cut = SubtourCut(pos_node_vars=lp_relaxation.positive_non_terminal_vars,
                      pos_edge_vars=lp_relaxation.positive_edge_vars)
