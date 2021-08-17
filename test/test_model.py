@@ -1,8 +1,6 @@
 from unittest import TestCase
 from unittest.mock import Mock
 
-from ortools.linear_solver.pywraplp import Solver
-
 from conn_subgraph.input import Input
 from conn_subgraph.model import MipModel
 
@@ -20,41 +18,50 @@ class MipModelTest(TestCase):
         self.input.budget = 9
 
     def test_constructor(self):
-        model = MipModel(self.input)
+        mip = MipModel(self.input)
 
-        self.assertEqual(0, model.solver.NumConstraints())
+        self.assertEqual(0, mip.model.getNConss())
         self.assertEqual(len(self.input.non_terminals) + len(self.input.edges),
-                         model.solver.NumVariables())
+                         mip.model.getNVars())
 
     def test_objective(self):
-        model = MipModel(self.input)
-        model.max_profits()
+        mip = MipModel(self.input)
+        mip.max_profits()
 
-        status = model.solver.Solve()
+        mip.model.optimize()
+        status = mip.model.getStatus()
+        obj_value = mip.model.getObjVal()
+        mip.model.freeTransform()
 
-        self.assertEqual(status, Solver.OPTIMAL)
-        self.assertEqual(0, model.solver.NumConstraints())
+        self.assertEqual("optimal", status)
+        self.assertEqual(0, mip.model.getNConss())
         self.assertAlmostEqual(sum(self.input.profits[n] for n in self.input.non_terminals),
-                               model.solver.Objective().Value())
+                               obj_value)
 
     def test_budget_constraint(self):
-        model = MipModel(self.input)
-        model.max_profits()
-        model.add_budget_constraint()
+        mip = MipModel(self.input)
+        mip.max_profits()
+        mip.add_budget_constraint()
 
-        status = model.solver.Solve()
+        mip.model.optimize()
+        status = mip.model.getStatus()
+        obj_value = mip.model.getObjVal()
+        mip.model.freeTransform()
 
-        self.assertEqual(status, Solver.OPTIMAL)
-        self.assertEqual(1, model.solver.NumConstraints())
-        self.assertAlmostEqual(3, model.solver.Objective().Value())
+        self.assertEqual("optimal", status)
+        self.assertEqual(1, mip.model.getNConss())
+        self.assertAlmostEqual(3, obj_value)
 
     def test_cardinality_constraint(self):
-        model = MipModel(self.input)
-        model.max_profits()
-        model.add_cardinality_constraint()
+        mip = MipModel(self.input)
+        mip.max_profits()
+        mip.add_cardinality_constraint()
 
-        status = model.solver.Solve()
+        mip.model.optimize()
+        status = mip.model.getStatus()
+        obj_value = mip.model.getObjVal()
+        mip.model.freeTransform()
 
-        self.assertEqual(status, Solver.OPTIMAL)
-        self.assertEqual(1, model.solver.NumConstraints())
-        self.assertAlmostEqual(4, model.solver.Objective().Value())
+        self.assertEqual("optimal", status)
+        self.assertEqual(1, mip.model.getNConss())
+        self.assertAlmostEqual(4, obj_value)

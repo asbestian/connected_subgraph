@@ -20,12 +20,16 @@ if __name__ == '__main__':
     cmd_args = cmd_parser.parse_args()
     logging.basicConfig(level=logging.DEBUG if cmd_args.debug else logging.INFO)
     prob_input = Input.read_file(cmd_args.file, cmd_args.budget)
-    lp_relaxation = MipModel(prob_input)
+    lp_relaxation = MipModel(prob_input, not cmd_args.output)
     lp_relaxation.add_cardinality_constraint()
     lp_relaxation.add_budget_constraint()
     lp_relaxation.max_profits()
-    if cmd_args.output:
-        lp_relaxation.solver.EnableOutput()
-    status = lp_relaxation.solver.Solve()
-    cut = SubtourCut(pos_node_vars=lp_relaxation.positive_non_terminal_vars,
-                     pos_edge_vars=lp_relaxation.positive_edge_vars)
+    cutFound = True
+    while cutFound:
+        lp_relaxation.model.optimize()
+        status = lp_relaxation.model.getStatus()
+        if status != "optimal":
+            raise RuntimeError("Non-optimal status.")
+        cut = SubtourCut(pos_node_vars=lp_relaxation.positive_non_terminal_vars,
+                         pos_edge_vars=lp_relaxation.positive_edge_vars)
+        cutFound = False
