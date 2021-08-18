@@ -15,7 +15,6 @@ Further information is available [here](https://www.cs.cornell.edu/~bistra/conne
 The considered input file is given by the [Corridor instance format](doc/COR_FileFormat.txt).
 
 # Execution
-In `root` directory: `python3 main.py -f input_file.txt`
 
 Run `python3 main.py -h` to see all command line arguments.
 
