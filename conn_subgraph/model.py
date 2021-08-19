@@ -1,6 +1,7 @@
 """Module responsible for modelling the connected subgraph problem mathematically."""
 
 import logging
+from typing import Dict, Tuple
 
 from pyscipopt import Model, quicksum
 
@@ -55,14 +56,12 @@ class MipModel:
         return self._node_vars
 
     @property
-    def positive_non_terminal_vars(self):
-        return {v: self.model.getVal(var) for v, var in self.non_terminal_vars.items() if
-                self.model.getVal(var) > 0.}
+    def non_terminal_solutions(self) -> Dict[int, float]:
+        return {v: self.model.getVal(var) for v, var in self.non_terminal_vars.items()}
 
     @property
-    def positive_edge_vars(self):
-        return {v: self.model.getVal(var) for v, var in self.edge_vars.items() if
-                self.model.getVal(var) > 0.}
+    def edge_solutions(self) -> Dict[Tuple[int, int], float]:
+        return {v: self.model.getVal(var) for v, var in self.edge_vars.items()}
 
     def __add_edge_vars(self, binary: bool) -> None:
         """Creates variables for graph edges and adds them to the solver model."""

@@ -4,6 +4,8 @@ import logging
 
 module_logger = logging.getLogger('input')
 
+from typing import Set, Dict, Tuple
+
 
 class InputError(Exception):
     """Base class for input exceptions."""
@@ -12,8 +14,8 @@ class InputError(Exception):
 class Input:
     """Class responsible for reading input files."""
 
-    def __init__(self, non_terminals: set, terminals: set, profits: dict, costs: dict, edges: set,
-                 budget: int):
+    def __init__(self, non_terminals: Set[int], terminals: Set[int], profits: Dict[int, int], costs: Dict[int, int],
+                 edges: Set[Tuple[int, int]], budget: int):
         self._non_terminals = non_terminals
         self._terminals = terminals
         self._profits = profits
@@ -22,41 +24,41 @@ class Input:
         self._budget = budget
 
     @property
-    def terminals(self):
+    def terminals(self) -> Set[int]:
         """Return the terminals of the input graph."""
         return self._terminals
 
     @property
-    def non_terminals(self):
+    def non_terminals(self) -> Set[int]:
         """Return the non-terminal nodes of the input graph."""
         return self._non_terminals
 
     @property
-    def nodes(self):
+    def nodes(self) -> Set[int]:
         """Return the nodes, i.e., non-terminals and terminals, of the input graph."""
         return self.non_terminals.union(self.terminals)
 
     @property
-    def profits(self):
+    def profits(self) -> Dict[int, int]:
         """Return the node profits."""
         return self._profits
 
     @property
-    def costs(self):
+    def costs(self) -> Dict[int, int]:
         """Return the node costs."""
         return self._costs
 
     @property
-    def edges(self):
+    def edges(self) -> Set[Tuple[int, int]]:
         """Return the edges of the input graph."""
         return self._edges
 
     @property
-    def budget(self):
+    def budget(self) -> int:
         return self._budget
 
     @classmethod
-    def read_file(cls, file: str, with_budget=True):
+    def read_file(cls, file: str, with_budget=True) -> 'Input':
         """Reads given input file.
 
         :param file: the input filename (including path)
@@ -100,7 +102,8 @@ class Input:
                         raise InputError(
                             f'Expected {num_neighbours} neighbours; found {neighbours}.')
                     for neighbour in distinct_neighbours:
-                        edges.add((node_id, neighbour))
+                        distinct_edge = (min(node_id, neighbour), max(node_id, neighbour))
+                        edges.add(distinct_edge)
         except FileNotFoundError:
             raise InputError(f'File {file} not found.')
         if (number_nodes := len(non_terminals) + len(terminals)) != num_nodes:
