@@ -1,7 +1,7 @@
 """Module responsible for modelling the connected subgraph problem mathematically."""
 
 import logging
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 
 from pyscipopt import Model, quicksum
 
@@ -94,11 +94,11 @@ class MipModel:
         """Ensures that the weight taken over all selected nodes is less or equal than the budget.
         """
         lhs = [(self.node_costs[v], var) for v, var in self.non_terminal_vars.items()]
-        rhs = self.budget - quicksum(self.node_costs[t] for t in self.terminals)
-        self.model.addCons(quicksum(weight * var for weight, var in lhs) <= rhs, name='weight_cons')
+        rhs = self.budget - sum(self.node_costs[t] for t in self.terminals)
+        self.model.addCons(quicksum(weight * var for weight, var in lhs) <= rhs, name='budget_cons')
         if logging.root.level >= logging.DEBUG:
             lhs_str = " + ".join(str(weight) + str(var) for weight, var in lhs)
-            module_logger.debug(f'Added budged constraint: {lhs_str} <= {rhs}')
+            module_logger.debug(f'Added budged constraint: {lhs_str} <= {str(rhs)}')
 
     def max_profits(self) -> None:
         """Maximises the profit taken over all non-terminal nodes."""
@@ -107,3 +107,15 @@ class MipModel:
         if logging.root.level >= logging.DEBUG:
             obj_str = " + ".join(str(profit) + str(var) for profit, var in obj)
             module_logger.debug(f'Added objective: {obj_str}')
+
+    def add_cut(self, edges: List[Tuple[int, int]], non_terminals: List[int], bound: int) -> None:
+        """Todo"""
+        self.model.freeTransform()
+        lhs_vars = [self.edge_vars[e] for e in edges]
+        rhs_vars = [self.non_terminal_vars[n] for n in non_terminals]
+        self.model.addCons(quicksum(lhs_vars)
+                           - quicksum(rhs_vars) <= bound)
+        if logging.root.level >= logging.DEBUG:
+            lhs_str = " + ".join(str(var) for var in lhs_vars)
+            rhs_str = " + ".join(str(var) for var in rhs_vars)
+            module_logger.debug(f'Add constraint: {lhs_str} <= {rhs_str} - {str(bound)}')

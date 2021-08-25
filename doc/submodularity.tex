@@ -32,25 +32,22 @@
 \section{Motivation}
 \begin{frame}{Steiner tree problem}
   \begin{center}
-  \begin{tikzpicture}[node distance = 2cm]
-    \node[draw,circle](A) {$a$};
-    \node[draw,circle, red](B) [right of=A] {$b$};
-    \node[draw,circle, red](C) [below of=A] {$c$};
-    \node[draw,circle](D) [right of=C] {$d$};
-    \node[draw,circle, red](E) [right of=D] {$e$};
-    \draw (A) -- (B) node[midway,above] {$e_1$};
-    \draw (A) -- (C) node[midway,left] {$e_2$};
-    \draw (A) -- (D) node[midway,above] {$e_3$};
-    \draw (B) -- (D) node[midway,right] {$e_4$};
-    \draw (C) -- (D) node[midway,below] {$e_5$};
-    \draw (D) -- (E) node[midway,below] {$e_6$};
-  \end{tikzpicture}
-\end{center}
+    \begin{tikzpicture}[node distance = 2cm]
+    \node[draw,circle](1) {$1$};
+    \node[draw,circle, red](2) [right of=1] {$2$};
+    \node[draw,circle, red](3) [below of=1] {$3$};
+    \node[draw,circle](4) [right of=3] {$4$};
+    \node[draw,circle](5) [right of=4] {$5$};
+    \draw (1) -- (3);% node[midway,left] %{$e_{13}$};
+    \draw (1) -- (4);% node[midway,above] {$e_{14}$};
+    \draw[] (2) -- (4);% node[midway,right] {$e_{24}$};
+    \draw[] (2) -- (5);% node[midway,below] {$e_{25}$};
+    \draw[] (4) -- (5);% node[midway,below] {$e_{45}$};
+    \end{tikzpicture}
+    \end{center}
   \begin{itemize}
   \item given graph $G = (V,E)$, set of \textcolor{red}{terminals} $T \subseteq V$
   \item a Steiner tree is a tree spanning $T$
-  \item given edge weights $w : E \rightarrow \R_+$, find Steiner tree
-    of minimum cost
   \end{itemize}
 \end{frame}
 
@@ -61,13 +58,13 @@
   \item $y_i \in \{0,1\}$ for $i \in N$ iff vertex $i$ is spanned by the Steiner tree
   \item Steiner tree polytope (relaxation) $P \subset \R^{|E| + |N|}$:
   \end{itemize}
-  \begin{align*}
+  \begin{align}
     \sum\limits_{e \in E} x_e &= \sum\limits_{i \in N} y_i + |T| - 1\\
     \sum\limits_{e \in E(S)} x_e &\leq \sum\limits_{i \in N \cap S} y_i + |T \cap S| -1 &&\forall S \subseteq V,~S \cap T \neq \emptyset\\
     \sum\limits_{e \in E(S)} x_e &\leq \sum\limits_{i \in S \setminus \{k\}} y_i &&\forall S \subseteq N,~k \in S\\
     x_e &\geq 0 &&\forall e \in E\\
-    y_i & \leq 1 &&\forall i \in N\\
-  \end{align*}
+    y_i & \leq 1 &&\forall i \in N
+  \end{align}
 \end{frame}
 
 \section{Preliminaries}
@@ -144,7 +141,7 @@
     \end{itemize}
 \end{frame}
 
-  \begin{frame}{Optional homework}
+  \begin{frame}{Exercise}
     Prove that $f: 2^V \rightarrow \N$ defined by $f(T) = |\delta(T)|$
     for all $T \subseteq V$ is submodular.
   \end{frame}
@@ -193,7 +190,7 @@
   \begin{proof}
     \begin{align*}
       f(S \cup \{i\}) - f(S) =
-      %%-\sum\limits_{T \subseteq S \cup \{j\}} c_T + \sum\limits_{T \subseteq S} c_T + &\sum\limits_{T \cap (S \cup \{j\}) \neq \emptyset} r_T - \sum\limits_{T \cap S \neq \emptyset} r_T = \\
+%      -\sum\limits_{J \subseteq S \cup \{i\}} c_J + \sum\limits_{J \subseteq S} c_J + &\sum\limits_{J \cap (S \cup \{i\}) \neq \emptyset} r_J - \sum\limits_{J \cap S \neq \emptyset} r_J = \\
       -\sum\limits_{J \subseteq S} c_{J \cup \{i\}} + \sum\limits_{\substack{J: J \cap S = \emptyset,\\i \in J}} r_J.
     \end{align*}
     \begin{itemize}
@@ -208,65 +205,10 @@
   \end{proof}
 \end{frame}
 
-\begin{frame}{Optional homework}
-  Write down $f(S \cup \{j\}) - f(S)$ in full detail and comprehend
-  proof.
-\end{frame}
-
-\begin{frame}{Example}
-  \begin{itemize}
-    \item let $G = (V,E)$ be a graph with edge weights $w \in
-      \R_+^{|E|}$
-    \item $e \in E$ corresponds to $\{u,v\}$ for $u,v \in V$ with
-      $u<v$
-    \item consider $f(S) = |S| - \sum\limits_{e \in E(S)} w_e$ for $S
-      \subseteq V$
-    \item define 
-  \end{itemize}
-  \begin{minipage}{0.49\textwidth}
-    \[r_T = \begin{cases} 1 & \text{for}~T \in V\\
-      0 & \text{otherwise}\end{cases}\]
-  \end{minipage}
-  \begin{minipage}{0.49\textwidth}
-    \[c_T = \begin{cases} w_e & \text{for}~T=e\\
-      0 & \text{otherwise}\end{cases}\]
-  \end{minipage}
-  \begin{itemize}
-  \item $f(S) = \sum\limits_{T \cap S \neq \emptyset} r_T - \sum\limits_{T \subseteq S} c_T = \sum\limits_{j \in S} 1 - \sum\limits_{e \in E(S)} w_e$
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Back to Steiner tree polytope}
-  \begin{itemize}
-  \item $x_e \in \{0,1\}$ for $e \in E$ with $x_e = 1$ iff  $e$ is used in Steiner tree
-  \item let $N = V \setminus T$ be the set of non-terminals
-  \item $y_i \in \{0,1\}$ for $i \in N$ iff vertex $i$ is spanned by the Steiner tree
-  \item $\sum\limits_{e \in E(S)} x_e \leq \sum\limits_{i \in N \cap S} y_i + |T \cap S| -1~~\forall S \subseteq V,~S \cap T \neq \emptyset$
-  \item let $(x^*, y^*)$ be non-negative optimal LP solution
-  \item define
-  \end{itemize}
-  \begin{align*}f(S) = &\sum\limits_{i \in N \cap S} y^*_i + |T \cap S| - \sum\limits_{e \in E(S)} x^*_e = \\ &\sum\limits_{i \in N \cap S} y^*_i + \sum\limits_{i
-    \in T \cap S} 1 - \sum\limits_{e \in E(S)} x^*_e\end{align*}
-\end{frame}
-
-\begin{frame}{Show $f(S)$ is of the form (\ref{prop})}
-  \begin{minipage}{0.49\textwidth}
-    \[r_J = \begin{cases} y_J^* & \text{for}~J \in N\\
-      1 & \text{for}~J \in T\\
-      0 & \text{otherwise}\end{cases}\]
-  \end{minipage}
-  \begin{minipage}{0.49\textwidth}
-    \[c_J = \begin{cases} x^*_e & \text{for}~J=e\\
-      0 & \text{otherwise}\end{cases}\]
-  \end{minipage}
-  \[f(S) = \sum\limits_{J \cap S \neq \emptyset} r_J - \sum\limits_{J \subseteq S} c_J = \sum\limits_{i \in N \cap S} y^*_i + \sum\limits_{i
-    \in T \cap S} 1 - \sum\limits_{e \in E(S)} x^*_e\]
-  \begin{itemize}
-    \item $\Rightarrow~f(S)$ is submodular
-    \item we want to solve $\min\limits_{\substack{S \subseteq V,\\S
-        \cap T \neq \emptyset}} f(S)$
-  \end{itemize}
-\end{frame}
+%% \begin{frame}{Exercise}
+%%   Write down $f(S \cup \{j\}) - f(S)$ in full detail and comprehend
+%%   proof.
+%% \end{frame}
 
 \begin{frame}
   \begin{theorem}
@@ -278,59 +220,28 @@
   \end{theorem}
 \end{frame}
 
-\begin{frame}{Solve via maximum flows}
-  \begin{itemize}
-  \item consider the digraph $D = (V_1 \cup V_2 \cup \{s,t\}, A)$ where
-    \item $V_1 = \{J \subseteq U: c_J > 0\}$
-    \item $V_2 = \{J \subseteq U: r_J > 0\}$
-    \item $A = \{(I,J) : I \in V_1,~J \in V_2, I \cap J \neq
-      \emptyset\} \cup \{(s, J) : J \in V_1\} \cup \{(J, t): J \in
-      V_2\}$
-    \item with capacities $d_a$ for $a \in A$ where
-      \begin{itemize}
-      \item $d_a = \infty$ for $a = (I,J)$
-      \item $d_a = c_J$ for $a = (s,J)$
-      \item $d_a = r_J$ for $a = (J,t)$
-      \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Depiction of max-flow problem}
-  \begin{center}
-    \begin{tikzpicture}[node distance = 1.5cm]
-      \node[draw,circle](s) {$s$};
-      \node[draw,circle](B) [right of=s] {};
-      \node[draw,circle](A) [above of=B] {};
-      \node[draw,circle](C) [below of=B] {$I$};
-      \node[] [above of=A] {$V_1$};
-      \node[draw,circle](E) [right of=B] {$J$};
-      \node[draw,circle](D) [above of=E] {};
-      \node[draw,circle](F) [below of=E] {};
-      \node[] [above of=D] {$V_2$};
-      \node[draw,circle](t) [right of=E] {$t$};
-      \draw[->] (s) -- (A);
-      \draw[->] (s) -- (B);
-      \draw[->] (s) -- (C) node[midway,below] {$c_I$};
-      \draw[->] (C) -- (E) node[midway] {\small{$I \cap J \neq \emptyset$}};
-      \draw[->] (E) -- (t) node[midway,below] {$r_J$};
-    \end{tikzpicture}
-    \end{center}
-\end{frame}
-
-\begin{frame}{Min s-t cuts}
-  \begin{itemize}
-    \item Goal: solve $\min\limits_{R \subseteq U} f(R)$ with $f(R)$ being of the form (\ref{prop})
-  \end{itemize}
-  \begin{prop}
-    Every minimal s-t cut $(W_1, W_2)$ in $D$ can be characterised by
-    a set $R \subseteq U$ where $W_1 = \{J \in V_1: J \subseteq R\}$
-    and $W_2 = \{J \in V_2: J \cap R \neq \emptyset\}$. The cut has
-    capacity \[d(W_1, W_2) = d(R) = \sum\limits_{J \cap (U \setminus
-      R) \neq \emptyset} c_J + \sum\limits_{J \cap R \neq \emptyset}
-    r_J.\]
-  \end{prop}
-It holds that  \[d(R) = \sum\limits_{J \subseteq U} c_J - \sum\limits_{J \subseteq R} c_J + \sum\limits_{J \cap R \neq \emptyset} r_J = f(R) + \sum\limits_{J \subseteq U} c_J.\]
-\end{frame}
+%% \begin{frame}{Example}
+%%   \begin{itemize}
+%%     \item let $G = (V,E)$ be a graph with edge weights $w \in
+%%       \R_+^{|E|}$
+%%     \item $e \in E$ corresponds to $\{u,v\}$ for $u,v \in V$ with
+%%       $u<v$
+%%     \item consider $f(S) = |S| - \sum\limits_{e \in E(S)} w_e$ for $S
+%%       \subseteq V$
+%%     \item define 
+%%   \end{itemize}
+%%   \begin{minipage}{0.49\textwidth}
+%%     \[r_T = \begin{cases} 1 & \text{for}~T \in V\\
+%%       0 & \text{otherwise}\end{cases}\]
+%%   \end{minipage}
+%%   \begin{minipage}{0.49\textwidth}
+%%     \[c_T = \begin{cases} w_e & \text{for}~T=e\\
+%%       0 & \text{otherwise}\end{cases}\]
+%%   \end{minipage}
+%%   \begin{itemize}
+%%   \item $f(S) = \sum\limits_{T \cap S \neq \emptyset} r_T - \sum\limits_{T \subseteq S} c_T = \sum\limits_{j \in S} 1 - \sum\limits_{e \in E(S)} w_e$
+%%   \end{itemize}
+%% \end{frame}
 
 \begin{frame}{Proposition for the non-empty case}
   Consider \begin{equation}\min\limits_{\emptyset \neq S \subseteq U}
@@ -348,55 +259,168 @@ It holds that  \[d(R) = \sum\limits_{J \subseteq U} c_J - \sum\limits_{J \subset
   \end{proof}
 \end{frame}
 
-\begin{frame}{Separation revisited}
+\begin{frame}{Back to Steiner tree polytope}
   \begin{itemize}
-  \item we want to solve $\min\limits_{\substack{S \subseteq V,\\S
-      \cap T \neq \emptyset}} f(S)$
+  \item let $N = V \setminus T$ be the set of non-terminals
+  \item $x_e \in \{0,1\}$ for $e \in E$ with $x_e = 1$ iff  $e$ is used in Steiner tree
+  \item $y_i \in \{0,1\}$ for $i \in N$ iff vertex $i$ is spanned by the Steiner tree
   \item[]
-  \item define $V_j = V \setminus \{j\}$ and $f_j(S) = f(S \cup
-    \{j\})$ for $j \in T$
+  \item $\sum\limits_{e \in E(S)} x_e \leq \sum\limits_{i \in N \cap S} y_i + |T \cap S| -1~~\forall S \subseteq V,~S \cap T \neq \emptyset$
   \item[]
-  \item $f_j(S) = \sum\limits_{i \in N \cap (S \cup \{j\})} y^*_i +
-    \sum\limits_{i \in T \cap (S \cup \{j\})} 1 - \sum\limits_{e \in
-      E(S \cup \{j\})} x^*_e$
+  \item $f(S) =  \sum\limits_{i \in N \cap S} y_i + \sum\limits_{i \in T \cap S} 1 - 1 - \sum\limits_{e \in E(S)} x_e$
   \item[]
-  \item solve $\min\limits_{j \in T} \min\limits_{S \subseteq V_j}
-    f_j(S)$
+    \item we want to solve $\min\limits_{\substack{S \subseteq V\\S \cap T \neq \emptyset}} f(S)$
+  \end{itemize}
+%  \begin{align*}f(S)
+%    = &\sum\limits_{i \in N \cap S} y_i + |T \cap S| - \sum\limits_{e \in E(S)} x_e
+%    =  &\sum\limits_{i \in N \cap S} y_i + \sum\limits_{i \in T \cap S} 1 - \sum\limits_{e \in E(S)} x_e\end{align*}
+\end{frame}
+
+
+
+\begin{frame}{$S \subseteq V, S \cap T \neq \emptyset$}
+  \begin{itemize}
+  \item let $i \in T$ and $S \subseteq V \setminus \{i\}$
+  \end{itemize}
+  \begin{align*}f(S \cup \{i\}) &= \sum\limits_{j \in N \cap (S \cup \{i\})} y_j + \sum\limits_{j \in T \cap (S \cup \{i\})} 1 - 1 - \sum\limits_{e \in E(S \cup \{i\})} x_e \\
+    &= \sum\limits_{j \in N \cap S} y_j + \sum\limits_{j \in T \cap S} 1 - \sum\limits_{e \in E(S \cup \{i\})} x_e \\
+    &= g_i(S)
+  \end{align*}
+\end{frame}
+
+\begin{frame}{Show $g_i$ is submodular}
+  \begin{minipage}{0.49\textwidth}
+    \[r_J = \begin{cases} y_J & \text{for}~J \in N\\
+      1 & \text{for}~J \in T\\ 0 & \text{otherwise}\end{cases}\]
+  \end{minipage}
+  \begin{minipage}{0.49\textwidth}
+    \[c_J = \begin{cases} x_{e} & \text{for}~J=e \\
+      x_{\{i,J\}} & \text{for}~J \in V \\
+      0 & \text{otherwise}\end{cases}\]
+  \end{minipage}
+  \begin{align*}
+    g_i(S) &= \sum\limits_{J \cap S \neq \emptyset} r_J - \sum\limits_{J \subseteq S} c_J \\
+    &= \sum\limits_{j \in N \cap S} y_j + \sum\limits_{j \in T \cap S} 1 - \sum\limits_{e \in E(S)} x_e - \sum\limits_{j \in S} x_{\{i,j\}} \\
+    &= \sum\limits_{j \in N \cap S} y_j + \sum\limits_{j \in T \cap S} 1 - \sum\limits_{e \in E(S \cup \{j\})} x_e
+  \end{align*}
+\end{frame}
+
+%% \begin{frame}{Show $f(S)$ is of the form (\ref{prop})}
+%%   \begin{minipage}{0.49\textwidth}
+%%     \[r_J = \begin{cases} y_J^* & \text{for}~J \in N\\
+%%       1 & \text{for}~J \in T\\ 0 & \text{otherwise}\end{cases}\]
+%%   \end{minipage}
+%%   \begin{minipage}{0.49\textwidth}
+%%     \[c_J = \begin{cases} x^*_e & \text{for}~J=e\\
+%%       0 & \text{otherwise}\end{cases}\]
+%%   \end{minipage}
+%%   \[f(S)
+%%   = \sum\limits_{J \cap S \neq \emptyset} r_J - \sum\limits_{J \subseteq S} c_J
+%%   = \sum\limits_{i \in N \cap S} y^*_i + \sum\limits_{i \in T \cap S} 1 - \sum\limits_{e \in E(S)} x^*_e\]
+%%   \begin{itemize}
+%%     \item $\Rightarrow~f(S)$ is submodular
+%%     \item we want to solve $\min\limits_{\substack{S \subseteq V,\\S
+%%         \cap T \neq \emptyset}} f(S)$
+%%   \end{itemize}
+%% \end{frame}
+
+\begin{frame}{Solve via maximum flow in directed graph}
+  \begin{itemize}
+  \item consider digraph $D = (V_1 \cup V_2 \cup \{s,t\}, A)$ where
+    \item $V_1 = \{J \subseteq U: c_J > 0\}$
+    \item $V_2 = \{J \subseteq U: r_J > 0\}$
+    \item $A = \{(I,J) : I \in V_1,~J \in V_2, I \cap J \neq
+      \emptyset\} \cup \{(s, J) : J \in V_1\} \cup \{(J, t): J \in
+      V_2\}$
+    \item with capacities $d_a$ for $a \in A$ where
+      \begin{itemize}
+      \item $d_a = \infty$ for $a = (I,J)$
+      \item $d_a = c_J$ for $a = (s,J)$
+      \item $d_a = r_J$ for $a = (J,t)$
+      \end{itemize}
   \end{itemize}
 \end{frame}
 
-\section{Example}
-\begin{frame}[fragile]{Example instance}
-\verbatiminput{example_graph.txt}
-  \begin{center}
-    \begin{tikzpicture}[node distance = 2cm]
-    \node[draw,circle](1) {$1$};
-    \node[draw,circle, red](2) [right of=1] {$2$};
-    \node[draw,circle, red](3) [below of=1] {$3$};
-    \node[draw,circle](4) [right of=3] {$4$};
-    \node[draw,circle](5) [right of=4] {$5$};
-    \draw (1) -- (3);% node[midway,left] %{$e_{13}$};
-    \draw (1) -- (4);% node[midway,above] {$e_{14}$};
-    \draw (2) -- (4);% node[midway,right] {$e_{24}$};
-    \draw (2) -- (5);% node[midway,below] {$e_{25}$};
-    \draw (4) -- (5);% node[midway,below] {$e_{45}$};
-    \end{tikzpicture}
-  \end{center}
+\begin{frame}{Min s-t cuts}
+  \begin{prop}
+    Every minimal s-t cut $(W_1, W_2)$ in $D$ can be characterised by
+    a set $R \subseteq U$ where $W_1 = \{J \in V_1: J \subseteq R\}$
+    and $W_2 = \{J \in V_2: J \cap R \neq \emptyset\}$. The cut has
+    capacity \[d(W_1, W_2) = d(R) = \sum\limits_{J \cap (U \setminus
+      R) \neq \emptyset} c_J + \sum\limits_{J \cap R \neq \emptyset}
+    r_J.\]
+  \end{prop}
+It holds that  \[d(R) = \sum\limits_{J \subseteq U} c_J - \sum\limits_{J \subseteq R} c_J + \sum\limits_{J \cap R \neq \emptyset} r_J = f(R) + \sum\limits_{J \subseteq U} c_J.\]
 \end{frame}
 
-\begin{frame}{Optimal solution of LP relaxation}
+\section{Example}
+\begin{frame}[fragile]{Example instance - Optimal solution}
+  \begin{minipage}{0.49\textwidth}
+  \verbatiminput{example_graph.txt}
+  \end{minipage}
+  \begin{minipage}{0.49\textwidth}
+    \begin{center}
+    \begin{tikzpicture}[node distance = 2cm]
+    \node[draw,circle, very thick](1) {$1$};
+    \node[draw,circle, red](2) [right of=1] {$2$};
+    \node[draw,circle, red](3) [below of=1] {$3$};
+    \node[draw,circle, very thick](4) [right of=3] {$4$};
+    \node[draw,circle](5) [right of=4] {$5$};
+    \draw[very thick] (1) -- (3);
+    \draw[very thick] (1) -- (4);
+    \draw[very thick] (2) -- (4);
+    \draw[] (2) -- (5);
+    \draw[] (4) -- (5);
+    \end{tikzpicture}
+    \end{center}
+  \end{minipage}
+\end{frame}
+
+\begin{frame}{LP relaxation}
+  \begin{minipage}{0.49\textwidth}
+    \begin{align*}
+      \max &\sum_{i \in N} p_i y_i~~\textbf{s.t.}\\
+      &\sum\limits_{i \in N} w_i y_i + |T| \leq b\\
+      &\sum\limits_{e \in E} x_e = \sum\limits_{i \in N} y_i + |T| - 1\\
+      &x_e \geq 0~~\forall e \in E\\
+      &y_i \leq 1~~\forall i \in N
+    \end{align*}
+  \end{minipage}
+  \begin{minipage}{0.49\textwidth}
+    \begin{center}
+    \begin{tikzpicture}[node distance = 2cm]
+      \node[draw,circle, very thick](1) {$1$};
+      \node[draw,circle, red](2) [right of=1] {$2$};
+      \node[draw,circle, red](3) [below of=1] {$3$};
+      \node[draw,circle](4) [right of=3] {$4$};
+      \node[draw,circle, very thick](5) [right of=4] {$5$};
+      \draw (1) -- (3);
+      \draw (1) -- (4);
+      \draw[very thick] (2) -- (4);
+      \draw[very thick] (2) -- (5);
+      \draw[very thick] (4) -- (5);
+    \end{tikzpicture}
+  \end{center}
+  \begin{itemize}
+  \item $x_{24}, x_{25}, x_{45} = 1$
+  \item $y_1, y_5 = 1$
+  \end{itemize}
+  \end{minipage}
+\end{frame}
+
+\begin{frame}{Violated inequality}
   \begin{itemize}
   \item $\sum\limits_{e \in E(S)} x_e \leq \sum\limits_{i \in N \cap S} y_i + |T \cap S| - 1~~\forall S \subseteq V,~S \cap T \neq \emptyset$
   \end{itemize}
   \vspace{1cm}
   \begin{minipage}{0.49\textwidth}
-  \begin{center}
-    \begin{tikzpicture}[node distance = 2cm]
-    \node[draw,circle, blue](1) {$1$};
+    \begin{center}
+    \begin{tikzpicture}[node distance = 1.5cm]
+    \node[draw,circle, very thick](1) {$1$};
     \node[draw,circle, red](2) [right of=1] {$2$};
     \node[draw,circle, red](3) [below of=1] {$3$};
     \node[draw,circle](4) [right of=3] {$4$};
-    \node[draw,circle, blue](5) [right of=4] {$5$};
+    \node[draw,circle, very thick](5) [right of=4] {$5$};
     \draw (1) -- (3);% node[midway,left] %{$e_{13}$};
     \draw (1) -- (4);% node[midway,above] {$e_{14}$};
     \draw[very thick] (2) -- (4);% node[midway,right] {$e_{24}$};
@@ -407,44 +431,45 @@ It holds that  \[d(R) = \sum\limits_{J \subseteq U} c_J - \sum\limits_{J \subset
   \end{minipage}
   \begin{minipage}{0.49\textwidth}
     \begin{itemize}
-    \item $S = \{2,4,5\}$
-    \item $\sum\limits_{e \in E(S)} x_e = 3$
-    \item $\sum\limits_{i\in N \cap S} y_i + |T \cap S| - 1 = 1$
-    \item $3 \not\leq 1$
+    \item for $S = \{2,4,5\}$
+      \begin{itemize}
+      \item $\sum\limits_{e \in E(S)} x_e = 3$
+      \item $\sum\limits_{i\in N \cap S} y_i + |T \cap S| - 1 = 1$
+      \end{itemize}
+        \item $\Rightarrow x_{24} + x_{25} + x_{45} \leq y_4 + y_5$
     \end{itemize}
   \end{minipage}
-  \begin{itemize}
-  \item $\Rightarrow x_{24} + x_{25} + x_{45} \leq y_2 + y_4$
-  \end{itemize}
 \end{frame}
 
-\begin{frame}{Separation}
+\begin{frame}{Solve $\min_{S \subseteq V \setminus \{2\}} g_2(S)$}
   \begin{itemize}
-    \item find $S \subseteq V,~S \cap T \neq \emptyset$
-      s.t. $\sum\limits_{i \in N \cap S} y_i + |T \cap S| - 1 -
-      \sum\limits_{e \in E(S)} x_e$ is minimal
-  \item $V_2 = V \setminus \{2\}$
-    \item $f_2(S) = f(S \cup \{2\})$
+  \item considered solution: $x_{24}, x_{25}, x_{45}, y_1, y_5 = 1$
   \end{itemize}
-  \vspace{1cm}
-  \begin{minipage}{0.49\textwidth}
   \begin{center}
     \begin{tikzpicture}[node distance = 2cm]
-    \node[draw,circle, blue](1) {$1$};
-    \node[draw,circle, red](2) [right of=1] {$2$};
-    \node[draw,circle, red](3) [below of=1] {$3$};
-    \node[draw,circle](4) [right of=3] {$4$};
-    \node[draw,circle, blue](5) [right of=4] {$5$};
-    \draw (1) -- (3);% node[midway,left] %{$e_{13}$};
-    \draw (1) -- (4);% node[midway,above] {$e_{14}$};
-    \draw[very thick] (2) -- (4);% node[midway,right] {$e_{24}$};
-    \draw[very thick] (2) -- (5);% node[midway,below] {$e_{25}$};
-    \draw[very thick] (4) -- (5);% node[midway,below] {$e_{45}$};
+      \node[draw,circle](s) {$s$};
+      \node[draw,circle](B) [right of=s] {$4$};
+      \node[draw,circle](A) [above of=B] {$4,5$};
+      \node[draw,circle](C) [below of=B] {$5$};
+      \node[draw,circle](E) [right of=B] {$3$};
+      \node[draw,circle](D) [above of=E] {$1$};
+      \node[draw,circle](F) [below of=E] {$5$};
+      \node[draw,circle](t) [right of=E] {$t$};
+      \draw[->] (s) -- (A) node[midway,above] {$1$};
+      \draw[->] (s) -- (B) node[midway,above] {$1$};
+      \draw[->] (s) -- (C) node[midway,above] {$1$};
+      \draw[->] (A) -- (F) node[midway,above] {$\infty$};
+      \draw[->] (C) -- (F) node[midway,above] {$\infty$};
+      \draw[->] (D) -- (t) node[midway,above] {$1$};
+      \draw[->] (E) -- (t) node[midway,above] {$1$};
+      \draw[->] (F) -- (t) node[midway,above] {$1$};
     \end{tikzpicture}
   \end{center}
-  \end{minipage}
-  \begin{minipage}{0.49\textwidth}
-  \end{minipage}
+  \begin{itemize}
+  \item $R = \{4,5\}$
+  \item $g_2(R) = d(R) - \sum\limits_{J \subseteq U \setminus \{2\}}
+    c_J = -2$
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{References}
@@ -452,11 +477,6 @@ It holds that  \[d(R) = \sum\limits_{J \subseteq U} c_J - \sum\limits_{J \subset
   \item Goemans, Myung: "A catalog of Steiner tree formulations"
   \item Nemhauser, Wolsey: "Integer and combinatorial optimization"
   \end{itemize}
-\end{frame}
-
-
-\begin{frame}{Lovász extension}
-  
 \end{frame}
 
 \end{document}

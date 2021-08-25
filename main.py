@@ -2,11 +2,14 @@
 
 import logging
 from argparse import ArgumentParser
+from itertools import chain
 from typing import Iterable
 
 from conn_subgraph.input import Input
 from conn_subgraph.model import MipModel
-from conn_subgraph.separation import Separation
+from conn_subgraph.subtour_elimination import SubtourElimination
+
+module_logger = logging.getLogger('main')
 
 cmd_parser = ArgumentParser(description='The connected subgraph problem.')
 cmd_parser.add_argument('-f', dest='file', type=str, help='Specifies the input file', required=True)
@@ -17,11 +20,13 @@ cmd_parser.add_argument('-o', dest='output', default=False, action='store_true',
 cmd_parser.add_argument('-d', dest='debug', default=False, action='store_true',
                         help='Set logging level to DEBUG. Default is INFO.')
 
+EPSILON = 1.e-3
+
 
 def is_fractional(solution_values: Iterable[float]) -> bool:
-    eps = 1.e-3
     for value in solution_values:
-        if eps < value < 1 - eps:
+        if EPSILON < value < 1 - EPSILON:
+            module_logger.debug(f'Fractional value: {value}')
             return True
     return False
 
@@ -39,8 +44,22 @@ if __name__ == '__main__':
         lin_prog.model.optimize()
         status = lin_prog.model.getStatus()
         if status != "optimal":
-            raise RuntimeError("Non-optimal status.")
-        sep = Separation(prob_input, non_terminal_solutions=lin_prog.non_terminal_solutions,
-                         edge_solutions=lin_prog.edge_solutions)
-        sep.compute()
-        cutFound = False
+            raise RuntimeError(f'Non-optimal status: {status}')
+        if logging.root.level >= logging.DEBUG:
+            module_logger.debug(f'Objective value: {lin_prog.model.getObjVal()}')
+            used_non_terminals = {n: val for n, val in lin_prog.non_terminal_solutions.items() if val > EPSILON}
+            used_edges = {e: val for e, val in lin_prog.edge_solutions.items() if val > EPSILON}
+            module_logger.debug(f'Used non-terminals: {used_non_terminals}')
+            module_logger.debug(f'Used edges: {used_edges}')
+        subtour = SubtourElimination(prob_input, non_terminal_solutions=lin_prog.non_terminal_solutions,
+                                     edge_solutions=lin_prog.edge_solutions)
+        min_value, S = subtour.find()
+        if min_value < -EPSILON:
+            edges = [edge for edge in lin_prog.edge_solutions.keys() if edge[0] in S and edge[1] in S]
+            non_terminals = [non_term for non_term in lin_prog.non_terminal_solutions.keys() if non_term in S]
+            offset = len(prob_input.terminals & S) - 1
+            lin_prog.add_cut(edges, non_terminals, offset)
+        else:
+            break
+    if is_fractional(chain(lin_prog.non_terminal_solutions.values(), lin_prog.edge_solutions.values())):
+        module_logger.warning("Solution is fractional.")
