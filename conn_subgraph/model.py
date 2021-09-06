@@ -13,15 +13,15 @@ module_logger = logging.getLogger('model')
 class MipModel:
     """Models the connected subgraph problem via mixed integer programming."""
 
-    def __init__(self, prob_input: Input, hide_output: bool = True, *, binary_variables: bool = False) -> None:
+    def __init__(self, prob_input: Input, hide_output: bool = True) -> None:
         self.model = Model()
         if hide_output:
             self.model.hideOutput()
         self._prob_input = prob_input
         self._edge_vars = dict()
         self._node_vars = dict()
-        self.__add_non_terminal_vars(binary_variables)
-        self.__add_edge_vars(binary_variables)
+        self.__add_non_terminal_vars()
+        self.__add_edge_vars()
 
     @property
     def graph_edges(self):
@@ -63,18 +63,18 @@ class MipModel:
     def edge_solutions(self) -> Dict[Tuple[int, int], float]:
         return {v: self.model.getVal(var) for v, var in self.edge_vars.items()}
 
-    def __add_edge_vars(self, binary: bool) -> None:
+    def __add_edge_vars(self) -> None:
         """Creates variables for graph edges and adds them to the solver model."""
         for edge in self.graph_edges:
             name = f'x_{edge}'
-            self.edge_vars[edge] = self.model.addVar(vtype='B' if binary else 'C', lb=0, ub=1, name=name)
+            self.edge_vars[edge] = self.model.addVar(vtype='C', lb=0., ub=1., name=name)
         module_logger.debug(f'Added {len(self.graph_edges)} edge variables.')
 
-    def __add_non_terminal_vars(self, binary: bool) -> None:
+    def __add_non_terminal_vars(self) -> None:
         """Creates variables for non-terminal nodes and adds them to the solver model."""
         for node in self.non_terminals:
             name = f'y_{node}'
-            self.non_terminal_vars[node] = self.model.addVar(vtype='B' if binary else 'C', lb=0, ub=1, name=name)
+            self.non_terminal_vars[node] = self.model.addVar(vtype='C', lb=0., ub=1., name=name)
         module_logger.debug(f'Added {len(self.non_terminal_vars)} node variables.')
 
     def add_cardinality_constraint(self) -> None:
@@ -108,14 +108,16 @@ class MipModel:
             obj_str = " + ".join(str(profit) + str(var) for profit, var in obj)
             module_logger.debug(f'Added objective: {obj_str}')
 
-    def add_cut(self, edges: List[Tuple[int, int]], non_terminals: List[int], bound: int) -> None:
-        """Todo"""
+    def add_constraint(self, edges: List[Tuple[int, int]], non_terminals: List[int], offset: int) -> None:
+        """Adds a constraint of the form:
+         \sum_{e in edges} x_e <= \sum_{i in non_terminals} y_i + offset
+        """
         self.model.freeTransform()
         lhs_vars = [self.edge_vars[e] for e in edges]
         rhs_vars = [self.non_terminal_vars[n] for n in non_terminals]
         self.model.addCons(quicksum(lhs_vars)
-                           - quicksum(rhs_vars) <= bound)
+                           - quicksum(rhs_vars) <= offset)
         if logging.root.level >= logging.DEBUG:
             lhs_str = " + ".join(str(var) for var in lhs_vars)
             rhs_str = " + ".join(str(var) for var in rhs_vars)
-            module_logger.debug(f'Add constraint: {lhs_str} <= {rhs_str} - {str(bound)}')
+            module_logger.debug(f'Add constraint: {lhs_str} <= {rhs_str} - {str(offset)}')

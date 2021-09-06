@@ -62,12 +62,12 @@
     \sum\limits_{e \in E} x_e &= \sum\limits_{i \in N} y_i + |T| - 1\\
     \sum\limits_{e \in E(S)} x_e &\leq \sum\limits_{i \in N \cap S} y_i + |T \cap S| -1 &&\forall S \subseteq V,~S \cap T \neq \emptyset\\
     \sum\limits_{e \in E(S)} x_e &\leq \sum\limits_{i \in S \setminus \{k\}} y_i &&\forall S \subseteq N,~k \in S\\
-    x_e &\geq 0 &&\forall e \in E\\
-    y_i & \leq 1 &&\forall i \in N
+    0 \leq x_e &\leq 1 &&\forall e \in E\\
+    0 \leq y_i &\leq 1 &&\forall i \in N
   \end{align}
 \end{frame}
 
-\section{Preliminaries}
+\section{Submodularity}
 %% \begin{frame}{Set functions}
 %%   \begin{itemize}
 %%   \item let $f : 2^U \rightarrow \R$ be a set function
@@ -78,17 +78,6 @@
 %%   \end{definition}
 %% \end{frame}
 
-%% \begin{frame}{Set function minimisation problem}
-%%   \begin{itemize}
-%%     \item Instance: finite set $U$, set function $f: 2^U \rightarrow
-%%       \Z$ (given by an oracle)
-%%     \item Task: find $T \subseteq U$ with $f(T)$ minimum
-%%     \item[]
-%%     \item if nothing known about $f$, then $2^U$ many oracle queries necessary
-%%     \item if $f$ is submodular, then polynomially many queries sufficient
-%%   \end{itemize}
-%% \end{frame}
-
 \begin{frame}{Definition}
   \begin{itemize}
   \item  let $U$ be a finite set 
@@ -97,7 +86,6 @@
     A set function $f : 2^U \rightarrow \R$ is submodular if \[f(S) +
     f(T) \geq f(S \cup T) + f(S \cap T)\] for all $S,T \subseteq U$.
   \end{definition}
-  
 \end{frame}
 
 \begin{frame}{Example: Matrix rank function}
@@ -146,6 +134,21 @@
     for all $T \subseteq V$ is submodular.
   \end{frame}
 
+\begin{frame}{Set function minimisation problem}
+  \begin{itemize}
+    \item given finite set $U$ and set function $f: 2^U \rightarrow
+      \Z$ (via an oracle)
+    \item find $T \subseteq U$ with $f(T)$ minimum
+  \end{itemize}
+  \begin{tabular}{ c|c } 
+    & number of queries needed to find $T \subseteq U$\\
+    \hline
+    $f$ arbitrary & exponential\\
+    $f$ submodular & polynomial\\ 
+  \end{tabular}
+\end{frame}
+
+
   %% \begin{itemize}
   %% \item for any $S,T \subseteq V$:
   %% \item let $(T \setminus S : S \setminus
@@ -171,12 +174,11 @@
   \begin{definition}
     A set function $f : 2^U \rightarrow \R$ is submodular if \[f(S
     \cup \{i\}) - f(S) \geq f(T \cup \{i\}) - f(T) \] for all $S,T
-    \subseteq U$ with $S \subseteq T$ and for all $in \in U \setminus
+    \subseteq U$ with $S \subseteq T$ and for all $i \in U \setminus
     T$.
   \end{definition}
 \end{frame}
 
-\section{Algorithms to minimize submodular functions}
 \begin{frame}{Proposition}
   \begin{prop}\label{prop}
     If $c_J, r_J \geq 0$ for $J \subseteq U$,
@@ -210,6 +212,7 @@
 %%   proof.
 %% \end{frame}
 
+\section{Algorithmic approach}
 \begin{frame}
   \begin{theorem}
     If $f$ is a submodular function of the form
@@ -259,7 +262,7 @@
   \end{proof}
 \end{frame}
 
-\begin{frame}{Back to Steiner tree polytope}
+\begin{frame}{Type I subtour elimination}
   \begin{itemize}
   \item let $N = V \setminus T$ be the set of non-terminals
   \item $x_e \in \{0,1\}$ for $e \in E$ with $x_e = 1$ iff  $e$ is used in Steiner tree
@@ -289,15 +292,21 @@
 \end{frame}
 
 \begin{frame}{Show $g_i$ is submodular}
+  \begin{itemize}
+    \item let $i \in T$ and define $V_i = V \setminus \{i\}$
+  \end{itemize}
   \begin{minipage}{0.49\textwidth}
     \[r_J = \begin{cases} y_J & \text{for}~J \in N\\
       1 & \text{for}~J \in T\\ 0 & \text{otherwise}\end{cases}\]
   \end{minipage}
   \begin{minipage}{0.49\textwidth}
-    \[c_J = \begin{cases} x_{e} & \text{for}~J=e \\
-      x_{\{i,J\}} & \text{for}~J \in V \\
+    \[c_J = \begin{cases} x_{e} & \text{for}~J=e \in V_i \times V_i \\
+      x_{\{i,J\}} & \text{for}~J \in V_i \\
       0 & \text{otherwise}\end{cases}\]
   \end{minipage}
+  \begin{itemize}
+    \item for $S \subseteq V_i$
+  \end{itemize}
   \begin{align*}
     g_i(S) &= \sum\limits_{J \cap S \neq \emptyset} r_J - \sum\limits_{J \subseteq S} c_J \\
     &= \sum\limits_{j \in N \cap S} y_j + \sum\limits_{j \in T \cap S} 1 - \sum\limits_{e \in E(S)} x_e - \sum\limits_{j \in S} x_{\{i,j\}} \\
@@ -361,11 +370,11 @@ It holds that  \[d(R) = \sum\limits_{J \subseteq U} c_J - \sum\limits_{J \subset
   \begin{minipage}{0.49\textwidth}
     \begin{center}
     \begin{tikzpicture}[node distance = 2cm]
-    \node[draw,circle, very thick](1) {$1$};
+    \node[draw,circle, very thick, label=above:{\small{$u_1=3$}}](1) {$1$};
     \node[draw,circle, red](2) [right of=1] {$2$};
     \node[draw,circle, red](3) [below of=1] {$3$};
-    \node[draw,circle, very thick](4) [right of=3] {$4$};
-    \node[draw,circle](5) [right of=4] {$5$};
+    \node[draw,circle, very thick, label=below:{\small{$u_4=1$}}](4) [right of=3] {$4$};
+    \node[draw,circle, label=below:{\small{$u_5=2$}}](5) [right of=4] {$5$};
     \draw[very thick] (1) -- (3);
     \draw[very thick] (1) -- (4);
     \draw[very thick] (2) -- (4);
@@ -377,18 +386,16 @@ It holds that  \[d(R) = \sum\limits_{J \subseteq U} c_J - \sum\limits_{J \subset
 \end{frame}
 
 \begin{frame}{LP relaxation}
-  \begin{minipage}{0.49\textwidth}
-    \begin{align*}
-      \max &\sum_{i \in N} p_i y_i~~\textbf{s.t.}\\
-      &\sum\limits_{i \in N} w_i y_i + |T| \leq b\\
-      &\sum\limits_{e \in E} x_e = \sum\limits_{i \in N} y_i + |T| - 1\\
-      &x_e \geq 0~~\forall e \in E\\
-      &y_i \leq 1~~\forall i \in N
+  \begin{align*}
+    \max 3y_1 + y_4 + 2y_5~&\textbf{s.t.}\\
+     y_1 + y_4 + y_5 + 2 &\leq 4\\
+     x_{13} + x_{14} + x_{24} + x_{25} + x_{45} &= y_1 + y_4 + y_5 + 2 - 1\\
+     0 \leq x_{13}, x_{14}, x_{24}, x_{25}, x_{45} &\leq 1\\
+     y_1, y_4, y_5 &\leq 1
     \end{align*}
-  \end{minipage}
   \begin{minipage}{0.49\textwidth}
     \begin{center}
-    \begin{tikzpicture}[node distance = 2cm]
+      \begin{tikzpicture}[node distance = 2cm]
       \node[draw,circle, very thick](1) {$1$};
       \node[draw,circle, red](2) [right of=1] {$2$};
       \node[draw,circle, red](3) [below of=1] {$3$};
@@ -400,15 +407,17 @@ It holds that  \[d(R) = \sum\limits_{J \subseteq U} c_J - \sum\limits_{J \subset
       \draw[very thick] (2) -- (5);
       \draw[very thick] (4) -- (5);
     \end{tikzpicture}
-  \end{center}
-  \begin{itemize}
-  \item $x_{24}, x_{25}, x_{45} = 1$
-  \item $y_1, y_5 = 1$
-  \end{itemize}
+    \end{center}
+  \end{minipage}
+  \begin{minipage}{0.49\textwidth}
+    \begin{itemize}
+    \item $x_{24}, x_{25}, x_{45} = 1$
+    \item $y_1, y_5 = 1$
+    \end{itemize}
   \end{minipage}
 \end{frame}
 
-\begin{frame}{Violated inequality}
+\begin{frame}{Subtour elimination}
   \begin{itemize}
   \item $\sum\limits_{e \in E(S)} x_e \leq \sum\limits_{i \in N \cap S} y_i + |T \cap S| - 1~~\forall S \subseteq V,~S \cap T \neq \emptyset$
   \end{itemize}
@@ -436,7 +445,8 @@ It holds that  \[d(R) = \sum\limits_{J \subseteq U} c_J - \sum\limits_{J \subset
       \item $\sum\limits_{e \in E(S)} x_e = 3$
       \item $\sum\limits_{i\in N \cap S} y_i + |T \cap S| - 1 = 1$
       \end{itemize}
-        \item $\Rightarrow x_{24} + x_{25} + x_{45} \leq y_4 + y_5$
+    \item[]
+    \item $x_{24} + x_{25} + x_{45} \leq y_4 + y_5$
     \end{itemize}
   \end{minipage}
 \end{frame}
@@ -470,6 +480,116 @@ It holds that  \[d(R) = \sum\limits_{J \subseteq U} c_J - \sum\limits_{J \subset
   \item $g_2(R) = d(R) - \sum\limits_{J \subseteq U \setminus \{2\}}
     c_J = -2$
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Next iteration}
+  \begin{center}
+    \begin{align*}
+      \max 3y_1 + y_4 + 2y_5~&\textbf{s.t.}\\
+      y_1 + y_4 + y_5 + 2 &\leq 4\\
+      x_{13} + x_{14} + x_{24} + x_{25} + x_{45} &= y_1 + y_4 + y_5 + 2 - 1\\
+      x_{24} + x_{45} + x_{25} &\leq y_4 + y_5\\
+      0 \leq x_{13}, x_{14}, x_{24}, x_{25}, x_{45} &\leq 1\\
+      y_1, y_4, y_5 &\leq 1
+    \end{align*}
+  \end{center}
+    \begin{tikzpicture}[node distance = 2cm]
+      \node[draw,circle, very thick](1) {$1$};
+      \node[draw,circle, red](2) [right of=1] {$2$};
+      \node[draw,circle, red](3) [below of=1] {$3$};
+      \node[draw,circle](4) [right of=3] {$4$};
+      \node[draw,circle, very thick](5) [right of=4] {$5$};
+      \draw[very thick] (1) -- (3);
+      \draw[very thick] (1) -- (4);
+      \draw (2) -- (4);
+      \draw[very thick] (2) -- (5);
+      \draw (4) -- (5);
+    \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]{Final solution}
+\begin{center}
+  \begin{tikzpicture}[node distance = 1cm]
+    \node[draw,circle, thick](1) {$1$};
+    \node[draw,circle, red](2) [right of=1] {$2$};
+    \node[draw,circle, red](3) [below of=1] {$3$};
+    \node[draw,circle, thick](4) [right of=3] {$4$};
+    \node[draw,circle](5) [right of=4] {$5$};
+    \draw[thick] (1) -- (3);
+    \draw[thick] (1) -- (4);
+    \draw[thick] (2) -- (4);
+    \draw[] (2) -- (5);
+    \draw[] (4) -- (5);
+  \end{tikzpicture}
+\end{center}
+  \begin{align*}
+      \max 3y_1 + y_4 + 2y_5~&\textbf{s.t.}\\
+      y_1 + y_4 + y_5 + 2 &\leq 4\\
+      x_{13} + x_{14} + x_{24} + x_{25} + x_{45} &= y_1 + y_4 + y_5 + 2 - 1\\
+      x_{24} + x_{45} + x_{25} &\leq y_4 + y_5\\
+      x_{14} + x_{13} &\leq y_1 + y_4\\
+      x_{25} &\leq y_5\\
+      x_{14} + x_{45} + x_{13} &\leq y_1 + y_4 + y_5\\
+      0 \leq x_{13}, x_{14}, x_{24}, x_{25}, x_{45} &\leq 1\\
+      y_1, y_4, y_5 &\leq 1
+  \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]{Additonal constraints}
+  \begin{itemize}
+    \item $\sum\limits_{e \in E(S)} x_e \leq \sum\limits_{j \in S
+      \setminus \{i\}} y_j ~~\forall S \subseteq N,~i \in S$
+  \end{itemize}
+  \vspace{1cm}
+  \begin{minipage}{0.49\textwidth}
+    \begin{center}
+    \begin{tikzpicture}[node distance = 1.5cm]
+    \node[draw,circle, very thick](1) {$1$};
+    \node[draw,circle, red](2) [right of=1] {$2$};
+    \node[draw,circle, red](3) [below of=1] {$3$};
+    \node[draw,circle](4) [right of=3] {$4$};
+    \node[draw,circle, very thick](5) [right of=4] {$5$};
+    \draw (1) -- (3);% node[midway,left] %{$e_{13}$};
+    \draw (1) -- (4);% node[midway,above] {$e_{14}$};
+    \draw[very thick] (2) -- (4);% node[midway,right] {$e_{24}$};
+    \draw[very thick] (2) -- (5);% node[midway,below] {$e_{25}$};
+    \draw[very thick] (4) -- (5);% node[midway,below] {$e_{45}$};
+    \end{tikzpicture}
+  \end{center}
+  \end{minipage}
+  \begin{minipage}{0.49\textwidth}
+    \begin{itemize}
+    \item for $S = \{4,5\}, i=5$
+      \begin{itemize}
+      \item $\sum\limits_{e \in E(S)} x_e = 1$
+      \item $\sum\limits_{j \in S \setminus \{i\}} y_j = 0$
+      \end{itemize}
+    \item[]
+    \item $x_{45} \leq y_4$
+    \end{itemize}
+  \end{minipage}  
+\end{frame}
+
+\begin{frame}{Type II subtour elimination}
+  \begin{itemize}
+  \item let $i \in N$ and define $N_i = N \setminus \{i\}$
+  \end{itemize}
+  \begin{minipage}{0.49\textwidth}
+    \[r_J = \begin{cases} y_J & \text{for}~J \in N\\
+      0 & \text{otherwise}\end{cases}\]
+  \end{minipage}
+  \begin{minipage}{0.49\textwidth}
+    \[c_J = \begin{cases} x_{e} & \text{for}~J=e \in N_i \times N_i\\
+      x_{\{i,J\}} & \text{for}~J \in N_i \\ 0 &
+      \text{otherwise}\end{cases}\]
+  \end{minipage}
+  \begin{itemize}
+  \item for $S \subseteq N_i$
+  \end{itemize}
+  \begin{align*}
+    h_i(S) &= \sum\limits_{J \cap S \neq \emptyset} r_J - \sum\limits_{J \subseteq S} c_J \\
+    &= \sum\limits_{j \in S} y_j - \sum\limits_{e \in E(S \cup \{i\})} x_e
+  \end{align*}
 \end{frame}
 
 \begin{frame}{References}

@@ -36,7 +36,7 @@ class Input:
     @property
     def nodes(self) -> Set[int]:
         """Return the nodes, i.e., non-terminals and terminals, of the input graph."""
-        return self.non_terminals.union(self.terminals)
+        return self.non_terminals | self.terminals
 
     @property
     def profits(self) -> Dict[int, int]:
